@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeMatch | Advanced Plagiarism Detection</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap">
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --text-color: #1e293b;
+      --primary-color: #4f46e5;
+      --primary-light: #6366f1;
+      --secondary-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --input-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --error-color: #ef4444;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0f172a;
+      --text-color: #e2e8f0;
+      --primary-color: #6366f1;
+      --primary-light: #818cf8;
+      --secondary-color: #1e293b;
+      --card-bg: #1e293b;
+      --input-bg: #334155;
+      --border-color: #475569;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.25), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.25), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.25rem;
+      color: var(--text-color);
+      opacity: 0.8;
+      transition: all 0.2s ease;
+      padding: 0.5rem;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle:hover {
+      opacity: 1;
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] .theme-toggle:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-color);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-color);
+      opacity: 0.8;
+      margin-bottom: 3rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: var(--shadow-md);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .code-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .code-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .code-input {
+      position: relative;
+    }
+
+    .code-input label {
+      display: block;
+      margin-bottom: 0.75rem;
+      font-weight: 500;
+      color: var(--text-color);
+      font-size: 0.875rem;
+    }
+
+    .code-input .language-selector {
+      position: absolute;
+      top: 2.5rem;
+      right: 1rem;
+      z-index: 10;
+      background-color: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-color);
+    }
+
+    textarea {
+      width: 100%;
+      height: 250px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.875rem;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      resize: vertical;
+      transition: all 0.3s;
+      line-height: 1.5;
+      box-shadow: var(--shadow-sm);
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    button:hover {
+      background-color: var(--primary-light);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: var(--shadow-sm);
+    }
+
+    button.secondary {
+      background-color: transparent;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+    }
+
+    button.secondary:hover {
+      background-color: rgba(79, 70, 229, 0.1);
+    }
+
+    #result {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background-color: var(--secondary-color);
+      border-radius: 12px;
+      font-size: 1.1rem;
+      text-align: center;
+      color: var(--text-color);
+      box-shadow: var(--shadow-sm);
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .result-high {
+      color: var(--error-color);
+      font-weight: 600;
+    }
+
+    .result-medium {
+      color: var(--warning-color);
+      font-weight: 600;
+    }
+
+    .result-low {
+      color: var(--success-color);
+      font-weight: 600;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .feature {
+      background-color: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease;
+    }
+
+    .feature:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+    }
+
+    .feature-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-desc {
+      font-size: 0.875rem;
+      opacity: 0.8;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.875rem;
+      opacity: 0.7;
+    }
+
+    /* Loading animation */
+    .loader {
+      display: none;
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    button.loading .loader {
+      display: inline-block;
+    }
+
+    button.loading span {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="#" class="logo">
+        <div class="logo-icon">CM</div>
+        <span>CodeMatch</span>
+      </a>
+      <button class="theme-toggle" id="themeToggle">🌙</button>
+    </header>
+
+    <main>
+      <h1>Code Plagiarism Detection</h1>
+      <p class="subtitle">Compare two code snippets to detect similarities and potential plagiarism with advanced analysis</p>
+
+      <form method="POST" id="plagiarismForm">
+        <div class="card">
+          <div class="code-container">
+            <div class="code-input">
+              <label for="code1">First Code Snippet</label>
+              <select class="language-selector">
+                <option>Auto-detect</option>
+                <option>Python</option>
+                <option>JavaScript</option>
+                <option>Java</option>
+                <option>C++</option>
+                <option>Other</option>
+              </select>
+              <textarea id="code1" name="code1" required placeholder="Paste your first code snippet here...">{{ request.form.code1 or '' }}</textarea>
+            </div>
+
+            <div class="code-input">
+              <label for="code2">Second Code Snippet</label>
+              <select class="language-selector">
+                <option>Auto-detect</option>
+                <option>Python</option>
+                <option>JavaScript</option>
+                <option>Java</option>
+                <option>C++</option>
+                <option>Other</option>
+              </select>
+              <textarea id="code2" name="code2" required placeholder="Paste your second code snippet here...">{{ request.form.code2 or '' }}</textarea>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" id="analyzeBtn">
+              <span>Analyze Code</span>
+              <div class="loader"></div>
+            </button>
+            <button type="button" id="clearBtn" class="secondary">Clear</button>
+          </div>
+        </div>
+      </form>
+
+      {% if result %}
+        <div id="result" class="{{ 'result-high' if 'high' in result.lower() else 'result-medium' if 'medium' in result.lower() else 'result-low' }}">
+          {{ result }}
+        </div>
+      {% endif %}
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">🔍</div>
+          <h3 class="feature-title">Deep Analysis</h3>
+          <p class="feature-desc">Our algorithm examines code structure, logic patterns, and variable usage for comprehensive comparison.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">⚡</div>
+          <h3 class="feature-title">Fast Processing</h3>
+          <p class="feature-desc">Get results in seconds with our optimized comparison engine, even for large codebases.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔒</div>
+          <h3 class="feature-title">Privacy Focused</h3>
+          <p class="feature-desc">Your code never leaves your browser. All analysis happens locally for maximum security.</p>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>CodeMatch Plagiarism Detector © 2025 | For educational purposes only</p>
+    </footer>
+  </div>
+
+  <script>
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const htmlElement = document.documentElement;
+    
+    // Check for saved theme preference or use preferred color scheme
+    const savedTheme = localStorage.getItem('theme') || 
+                      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    
+    // Apply the saved theme
+    if (savedTheme === 'dark') {
+      htmlElement.setAttribute('data-theme', 'dark');
+      themeToggle.textContent = '☀️';
+    } else {
+      htmlElement.removeAttribute('data-theme');
+      themeToggle.textContent = '🌙';
+    }
+    
+    // Toggle theme on button click
+    themeToggle.addEventListener('click', () => {
+      if (htmlElement.getAttribute('data-theme') === 'dark') {
+        htmlElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        themeToggle.textContent = '🌙';
+      } else {
+        htmlElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        themeToggle.textContent = '☀️';
+      }
+    });
+
+    // Form submission handler
+    const form = document.getElementById('plagiarismForm');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    
+    if (form) {
+      form.addEventListener('submit', () => {
+        analyzeBtn.classList.add('loading');
+      });
+    }
+
+    // Clear button functionality
+    const clearBtn = document.getElementById('clearBtn');
+    const code1Textarea = document.getElementById('code1');
+    const code2Textarea = document.getElementById('code2');
+    const resultDiv = document.getElementById('result');
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        // Clear textareas
+        code1Textarea.value = '';
+        code2Textarea.value = '';
+        
+        // Clear result if it exists
+        if (resultDiv) {
+          resultDiv.remove();
+        }
+        
+        // Reset language selectors
+        const languageSelectors = document.querySelectorAll('.language-selector');
+        languageSelectors.forEach(selector => {
+          selector.value = 'Auto-detect';
+        });
+      });
+    }
+  </script>
+</body>
+</html>
